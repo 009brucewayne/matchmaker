@@ -8,7 +8,7 @@
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#121012;--card:#1f1b1d;--text:#f2ecec;--muted:#c4b5b5;--line:#3a3034;--burgundy:#c23a5a;--ok:#2e8a4c;--bad:#c0283e}}
 *{box-sizing:border-box;margin:0;padding:0}
 html{-webkit-text-size-adjust:100%}
-body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.4;padding:0 16px 130px;max-width:560px;margin:0 auto}
+body{background:var(--bg);color:var(--text);font-family:'Source Serif 4',Georgia,serif;font-size:17px;line-height:1.4;padding:0 16px 170px;max-width:560px;margin:0 auto}
 header{background:var(--head);color:#fff;margin:0 -16px 16px;padding:20px 16px 18px;border-bottom:4px solid var(--gold)}
 h1{font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:26px;line-height:1.15}
 .team{color:var(--gold);font-weight:600;margin-top:6px;font-size:16px}
@@ -31,6 +31,21 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:17px;padding:10px;bo
 .bar .msg{font-size:15px;width:100%}
 .bar.ok{background:var(--ok)}
 .bar.over{background:var(--bad)}
+.track{width:100%;height:10px;background:rgba(255,255,255,.25);border-radius:5px;overflow:hidden;margin-top:6px}
+.fill{height:100%;width:0;background:var(--gold);transition:width .25s ease}
+.bar.ok .fill{background:#fff}
+.bar.over .fill{background:#ffd0d6}
+.see{display:none;background:#fff;color:var(--ok);border:0;font:inherit;font-weight:700;padding:6px 12px;border-radius:6px}
+.bar.ok .see{display:inline-block}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:30}
+.veil{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:20;align-items:center;justify-content:center;padding:16px}
+.veil.show{display:flex}
+.card{background:var(--bg);color:var(--text);width:100%;max-width:440px;max-height:90vh;overflow:auto;border-radius:10px;border-top:6px solid var(--gold)}
+.card h3{font-family:'Playfair Display',Georgia,serif;font-size:24px;background:var(--head);color:#fff;padding:16px}
+.card ul{padding:12px 16px}
+.card li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0;margin:0}
+.card .sum{font-weight:700;border-bottom:0}
+.card .keep{display:block;width:calc(100% - 32px);margin:0 16px 16px;background:var(--head);color:#fff;border:0;font:inherit;padding:12px;border-radius:8px}
 </style></head>
 <body>
 <header><h1>Matchmaker: The $1,500 Future Wife</h1><div class="team">Team: Boys</div></header>
@@ -39,17 +54,31 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:17px;padding:10px;bo
 <h2>The one quality we would never give up, and why:</h2>
 <textarea id="why" placeholder="Type your answer here"></textarea>
 <button class="reset" type="button" id="reset">Start over</button>
-<div class="bar" id="bar"><div><span>Our total</span><span class="big" id="tot">$0</span><span class="msg" id="msg">$1,500 left to spend</span></div></div>
+<div class="bar" id="bar"><div><span>Our total</span><span class="big" id="tot">$0</span><span class="msg" id="msg">$1,500 left to spend</span><div class="track"><div class="fill" id="fill"></div></div><button class="see" id="see" type="button">See our match</button></div></div>
+<canvas id="confetti"></canvas>
+<div class="veil" id="veil"><div class="card"><h3>Our $1,500 Future Wife</h3><ul id="picks"></ul><button class="keep" id="keep" type="button">Back to the list</button></div></div>
 <script>
 (function(){
 var K='matchmaker-boys',boxes=[].slice.call(document.querySelectorAll('input[type=checkbox]')),why=document.getElementById('why');
 function load(){try{return JSON.parse(localStorage.getItem(K))||{}}catch(e){return {}}}
 function save(){try{localStorage.setItem(K,JSON.stringify({b:boxes.filter(function(x){return x.checked}).map(function(x){return x.dataset.i}),w:why.value}))}catch(e){}}
 function f(n){return '$'+n.toLocaleString('en-US')}
+var last=-1,veil=document.getElementById('veil');
+function reveal(){var l=document.getElementById('picks'),h='';boxes.forEach(function(b){if(b.checked){var q=b.closest('label');h+='<li><span>'+q.querySelector('b').textContent+'</span><span>'+q.querySelector('.price').textContent+'</span></li>'}});
+l.innerHTML=h+'<li class="sum"><span>Total</span><span>$1,500</span></li>';veil.classList.add('show')}
+function boom(){if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+var c=document.getElementById('confetti'),x=c.getContext('2d'),W=c.width=innerWidth,H=c.height=innerHeight,cols=['#C9A84C','#800020','#e8c96a','#ffffff','#5a0016'],P=[];
+for(var i=0;i<160;i++)P.push({x:W/2,y:H*0.75,vx:(Math.random()-.5)*14,vy:-Math.random()*16-6,s:Math.random()*7+4,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:cols[i%5]});
+var n=0;(function go(){x.clearRect(0,0,W,H);P.forEach(function(p){p.vy+=.45;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});
+if(++n<110)requestAnimationFrame(go);else x.clearRect(0,0,W,H)})()}
 function upd(){var t=0;boxes.forEach(function(b){b.closest('label').classList.toggle('on',b.checked);if(b.checked)t+=+b.dataset.p});
 var bar=document.getElementById('bar'),m=document.getElementById('msg');document.getElementById('tot').textContent=f(t);
 bar.className='bar'+(t===1500?' ok':t>1500?' over':'');
-m.textContent=t===1500?'Exactly $1,500. Done!':t>1500?'Over by '+f(t-1500)+'. Take something off.':f(1500-t)+' left to spend';save()}
+document.getElementById('fill').style.width=Math.min(t/1500,1)*100+'%';
+m.textContent=t===1500?'Exactly $1,500. Done!':t>1500?'Over by '+f(t-1500)+'. Take something off.':f(1500-t)+' left to spend';
+if(t===1500&&last!==-1&&last!==1500){boom();setTimeout(reveal,900)}last=t;save()}
+document.getElementById('see').addEventListener('click',reveal);
+document.getElementById('keep').addEventListener('click',function(){veil.classList.remove('show')});
 var s=load();boxes.forEach(function(b){if((s.b||[]).indexOf(b.dataset.i)>-1)b.checked=true;b.addEventListener('change',upd)});
 why.value=s.w||'';why.addEventListener('input',save);
 document.getElementById('reset').addEventListener('click',function(){if(!confirm('Clear everything and start over?'))return;boxes.forEach(function(b){b.checked=false});why.value='';upd()});
