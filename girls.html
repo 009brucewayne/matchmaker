@@ -45,6 +45,12 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:17px;padding:10px;bo
 .card ul{padding:12px 16px}
 .card li{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid var(--line);padding:8px 0;margin:0}
 .card .sum{font-weight:700;border-bottom:0}
+.delulu{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.35)}
+.delulu.show{display:flex}
+.delulu div{background:#fff;color:#b00020;border:6px solid #b00020;border-radius:12px;padding:18px 20px;text-align:center;font-family:'Playfair Display',Georgia,serif;font-weight:900;font-size:40px;line-height:1.1;transform:rotate(-8deg);box-shadow:0 10px 30px rgba(0,0,0,.35);animation:stamp .35s cubic-bezier(.2,1.6,.4,1) both}
+.delulu small{display:block;font-size:24px;margin-top:8px;color:#1a1410}
+@keyframes stamp{from{transform:rotate(-8deg) scale(2.4);opacity:0}to{transform:rotate(-8deg) scale(1);opacity:1}}
+@media (prefers-reduced-motion: reduce){.delulu div{animation:none}}
 .card .keep{display:block;width:calc(100% - 32px);margin:0 16px 16px;background:var(--head);color:#fff;border:0;font:inherit;padding:12px;border-radius:8px}
 </style></head>
 <body>
@@ -56,6 +62,7 @@ textarea{width:100%;min-height:110px;font:inherit;font-size:17px;padding:10px;bo
 <button class="reset" type="button" id="reset">Start over</button>
 <div class="bar" id="bar"><div><span>Our total</span><span class="big" id="tot">$0</span><span class="msg" id="msg">$1,500 left to spend</span><div class="track"><div class="fill" id="fill"></div></div><button class="see" id="see" type="button">See our match</button></div></div>
 <canvas id="confetti"></canvas>
+<div class="delulu" id="delulu"><div>You're delulu.<small>Try again 😆</small></div></div>
 <div class="veil" id="veil"><div class="card"><h3>Our $1,500 Future Husband</h3><ul id="picks"></ul><button class="keep" id="keep" type="button">Back to the list</button></div></div>
 <script>
 (function(){
@@ -76,7 +83,10 @@ var bar=document.getElementById('bar'),m=document.getElementById('msg');document
 bar.className='bar'+(t===1500?' ok':t>1500?' over':'');
 document.getElementById('fill').style.width=Math.min(t/1500,1)*100+'%';
 m.textContent=t===1500?'Exactly $1,500. Done!':t>1500?'Over by '+f(t-1500)+'. Take something off.':f(1500-t)+' left to spend';
-if(t===1500&&last!==-1&&last!==1500){boom();setTimeout(reveal,900)}last=t;save()}
+if(t===1500&&last!==-1&&last!==1500){boom();setTimeout(reveal,900)}
+if(t>1500&&last!==-1&&t>last){var d=document.getElementById('delulu');d.classList.remove('show');void d.offsetWidth;d.classList.add('show');clearTimeout(dt);dt=setTimeout(function(){d.classList.remove('show')},2000)}
+last=t;save()}
+var dt;document.getElementById('delulu').addEventListener('click',function(){this.classList.remove('show')});
 document.getElementById('see').addEventListener('click',reveal);
 document.getElementById('keep').addEventListener('click',function(){veil.classList.remove('show')});
 var s=load();boxes.forEach(function(b){if((s.b||[]).indexOf(b.dataset.i)>-1)b.checked=true;b.addEventListener('change',upd)});
